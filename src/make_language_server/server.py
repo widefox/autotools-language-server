@@ -35,23 +35,31 @@ from .finders import (
     DefinitionFinder,
     ReferenceFinder,
 )
+from .filtered_finders import get_configurable_finder_classes
 from .utils import get_schema, parser
+
+# Use configurable finders by default
+# Can be overridden by setting use_filtered_finders=False
+USE_CONFIGURABLE_FINDERS = True
 
 
 class MakeLanguageServer(LanguageServer):
     r"""Make language server."""
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, *args: Any, use_configurable_finders: bool = USE_CONFIGURABLE_FINDERS, **kwargs: Any) -> None:
         r"""Init.
 
         :param args:
         :type args: Any
+        :param use_configurable_finders: Whether to use configurable finders with error filtering
+        :type use_configurable_finders: bool
         :param kwargs:
         :type kwargs: Any
         :rtype: None
         """
         super().__init__(*args)
         self.trees = {}
+        self.use_configurable_finders = use_configurable_finders
 
         @self.feature(TEXT_DOCUMENT_DID_OPEN)
         @self.feature(TEXT_DOCUMENT_DID_CHANGE)
@@ -66,10 +74,18 @@ class MakeLanguageServer(LanguageServer):
                 params.text_document.uri
             )
             self.trees[document.uri] = parser.parse(document.source.encode())
+
+            # Choose finder classes based on configuration
+            finder_classes = (
+                get_configurable_finder_classes()
+                if self.use_configurable_finders
+                else DIAGNOSTICS_FINDER_CLASSES
+            )
+
             diagnostics = get_diagnostics(
                 document.uri,
                 self.trees[document.uri],
-                DIAGNOSTICS_FINDER_CLASSES,
+                finder_classes,
             )
             self.text_document_publish_diagnostics(
                 PublishDiagnosticsParams(

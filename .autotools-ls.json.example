@@ -1,0 +1,24 @@
+{
+  "diagnostics": {
+    "suppress_false_positives": true,
+    "max_errors": 100,
+    "suppressed_error_patterns": [
+      "= -.*: error",
+      "= --.*: error",
+      "^=:? error$",
+      "^\\(: error$",
+      "^,\\): error$",
+      ":/=: error$",
+      "^,: error$",
+      "^\\|: error$",
+      "^;: error$"
+    ],
+    "allow_repeated_targets": false,
+    "check_includes": true
+  },
+  "performance": {
+    "max_file_size": 10485760,
+    "max_lines": 0,
+    "log_performance": false
+  }
+}
